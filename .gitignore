@@ -6,3 +6,4 @@ logs/
 results/sim_axi/*.hex
 results/sim_axi/xsim.dir/
 run*_k*.log
+build/

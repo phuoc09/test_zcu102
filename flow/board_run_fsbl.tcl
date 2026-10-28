@@ -7,9 +7,9 @@
 # PS->PL port) but this block design is 32-bit.  Regs at offsets that are not multiples of 16
 # (K at 0x214, WAIT at 0x218) then read 0.  The script writes bits[9:8] = 0 (what psu_init does).
 #
-# The app waits ~5 s for the ILA before vector 0.  With caches off after `rst -processor` that
-# loop (1.5e9 iterations) takes minutes, so the script patches `movk x1,#0x5968,lsl#16` at
-# 0x101db4 to #0x0001 in RAM.  The ELF on disk is untouched; ILA capture is skipped in this mode.
+# The app waits 5 s for the ILA before vector 0.  The 28/10 run patched that loop in RAM; the app
+# now reads the wait from its mailbox (0x100000C0 = "WAIT", 0x100000C4 = ms), set to 0 here.
+# flow/board_run.tcl supersedes this script (own PS init, both K, fallback to this FSBL).
 #
 # usage: HIL_URL=TCP:172.16.36.2:3121 HIL_SER=210308A65523 xsct -no-ini flow/board_run_fsbl.tcl <K>
 set k [lindex $argv 0]
@@ -19,8 +19,6 @@ set elf  $root/results/pe_hil_k$k.elf
 set fsbl $root/results/fsbl_zcu102.elf
 set url [expr {[info exists ::env(HIL_URL)] ? $::env(HIL_URL) : "TCP:127.0.0.1:3121"}]
 set ser [expr {[info exists ::env(HIL_SER)] ? $::env(HIL_SER) : "*"}]
-set PATCH_ADDR 0x101db4
-set PATCH_INSN 0xF2A00021
 set RUN_MS 90000
 foreach f [list $bit $elf $fsbl] { if {![file exists $f]} { error "missing $f" } }
 proc tgt {pat} { global ser; targets -set -nocase -filter "jtag_cable_serial =~ \"$ser\" && name =~ \"$pat\"" }
@@ -65,7 +63,7 @@ tgt "*A53*#0"
 rst -processor
 after 500
 dow -force $elf
-mwr -force $PATCH_ADDR $PATCH_INSN
+mwr -force 0x100000C0 [list 0x57414954 0]
 mwr -force 0x10000000 0 32
 con
 after $RUN_MS

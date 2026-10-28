@@ -15,9 +15,12 @@ cả file dựng sẵn để nạp ngay và toàn bộ nguồn để build lại
 | `vectors/gen_hil_vectors.py` | Sinh 2000 vector, `sw/hil_vectors.h` và FNV tham chiếu |
 | `tb/` | Testbench AXI4-Lite + PE, so bit-exact (`run_sim.sh`) |
 | `sw/` | App bare-metal A53 (`start.S`, `pe_hil_min.c`, `link.ld`), không cần BSP |
+| `sw/psinit/` | Khởi tạo PS/DDR cho JTAG boot: chạy `psu_init.c` của XSA trên OCM (thay FSBL) |
 | `flow/build_all.sh` | BD → bitstream + XSA → ELF + `.bin` + `psu_init` |
 | `flow/build_hil.tcl`, `flow/build_sw_min.sh` | Hai bước con của `build_all.sh` |
-| `flow/board_debug2.tcl` | **Chạy trên board** (xsct, hw_server cục bộ hoặc từ xa), in đầy đủ chẩn đoán |
+| `flow/board_run.tcl` | **Chạy trên board** cả K = 4 và K = 0 (psinit, tự chuyển sang FSBL nếu cần) |
+| `flow/board_run_fsbl.tcl` | Flow FSBL đã PASS ngày 28/10 (chỉ K, không vá RAM nữa) |
+| `flow/board_debug2.tcl` | Chẩn đoán đường bộ nhớ (dùng khi điều tra lỗi DDR) |
 | `flow/board_debug.tcl`, `flow/arm_ila.tcl` | Script chạy board bản đầu; bật ILA và lưu CSV |
 | `flow/run_hil.sh`, `prep_hw.tcl`, `run_app.tcl`, `check_result.py` | Flow cũ khi board cắm thẳng vào máy build |
 | `results/` | File dựng sẵn: `hil_zcu102_k{4,0}.bit/.xsa/.ltx`, `pe_hil_k{4,0}.elf/.bin`, `psu_init_k{4,0}.tcl`, báo cáo util/timing, log mô phỏng |
@@ -44,11 +47,50 @@ python3 vectors/gen_hil_vectors.py 2000 16   # vector + sw/hil_vectors.h + FNV
 
 Kết quả nằm trong `results/` (ghi đè file dựng sẵn) và project Vivado nằm ở `vivado/hil_k$K/`.
 Chỉ đổi phần mềm thì không cần build lại bitstream: `./flow/build_sw_min.sh 4` dùng
-`results/hil_zcu102_k4.xsa` có sẵn để tạo `pe_hil_k4.elf`, `pe_hil_k4.bin`, `psu_init_k4.tcl`.
+`results/hil_zcu102_k4.xsa` có sẵn để tạo `pe_hil_k4.elf`, `pe_hil_k4.bin`, `psinit_k4.elf`, `psu_init_k4.tcl`.
 
 Đã kiểm 28/10 trên một bản sao sạch: vector, `sw/hil_vectors.h`, `.bin` và `psu_init` dựng lại giống
 từng byte với file trong `results/`; mô phỏng AXI 2000 vector × {K = 0, K = 4}: 0 lỗi.
 Thiết kế dựng sẵn: K = 4 đạt WNS +0.043 ns, K = 0 đạt +0.007 ns ở 200 MHz.
+
+## Lần đo tiếp theo (cần chạy): `flow/board_run.tcl`
+
+```bash
+HIL_URL=TCP:172.16.36.2:3121 HIL_SER=210308A65523 xsct -no-ini flow/board_run.tcl 4 0 2>&1 | tee results/hil_run_k4_k0.log
+```
+
+Một lệnh chạy cả K = 4 và K = 0. Với mỗi K, script làm:
+
+1. `rst -system` → nạp bitstream.
+2. Khởi tạo PS và DDR bằng `results/psinit_k$K.elf`: chính `psu_init.c` (bản C mà FSBL dùng) lấy từ XSA của
+   thiết kế này, chạy trên OCM. Cổng PS→PL được đặt đúng 32 bit, không cần vá.
+3. Kiểm khối DDR 1024 word. Nếu `psinit` lỗi, script tự làm lại K đó bằng FSBL của lab (cách đã PASS ngày 28/10).
+4. Nạp app, đặt thời gian đợi ILA = 0 qua mailbox (`0x100000C0`), chạy, đọc khối kết quả.
+
+So với lần chạy 28/10:
+
+- **Không vá lệnh trong RAM nữa.** App đọc thời gian đợi ILA từ mailbox, không có mailbox thì đợi 5 s như cũ.
+- **Đo được thời gian chạy:** `rst -processor` xoá `CNTFRQ_EL0`, nên app lấy tần số từ system counter
+  (`0xFF260020`, psu_init đặt khoảng 100 MHz). Word 13 = µs cho 2000 vector, cache tắt nên con số này phản ánh
+  tốc độ MMIO qua AXI4-Lite, không phải tốc độ tính của PE.
+- `results/pe_hil_k{4,0}.elf/.bin` đã build lại với các thay đổi trên. Log PASS ngày 28/10 dùng bản ELF trước đó.
+
+Gửi lại `results/hil_run_k4_k0.log`. Kết quả mong đợi ở cuối log:
+
+```
+== SUMMARY
+HIL_PASS k=4 init=psinit run_us=... (... us/vector, ...)
+HIL_PASS k=0 init=psinit run_us=...
+```
+
+| Thấy gì | Nghĩa là |
+|---|---|
+| `init=psinit` cho cả hai K | Không cần FSBL ngoài nữa, toàn bộ flow lấy từ repo này |
+| `init=fsbl` | `psinit` chưa thay được FSBL; xem các dòng `STEP2` và `STEP3` của lần thử `psinit` |
+| `STEP2 ... status=0x505349E1` hoặc `printf` > 0 | `psu_init` C báo lỗi (thường là SERDES timeout) |
+| `HIL_PASS k=0` | Bản ALM gốc cũng bit-exact trên board (FNV `0x6A15E630`) |
+
+Chụp ILA (tuỳ chọn): đặt `HIL_ILA=1`, rồi chạy `flow/arm_ila.tcl` ngay khi log in `STEP5 k=4 app running`.
 
 ## Yêu cầu phần cứng
 

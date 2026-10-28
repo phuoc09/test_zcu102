@@ -10,6 +10,7 @@ SECTIONS
   }
   .rodata : { *(.rodata*) }
   .data   : { *(.data*) }
+  . = ALIGN(8);              /* start.S clears .bss with 8-byte stores */
   .bss    : {
     __bss_start = .;
     *(.bss*) *(COMMON)

@@ -24,9 +24,18 @@ BIN=results/pe_hil_k$K.bin
 # The XSA carries the exact psu_init for this PS configuration.
 unzip -p "$XSA" psu_init.tcl > results/psu_init_k$K.tcl
 
+# PS init for JTAG boot without an FSBL: the C psu_init from the same XSA, run from OCM.
+PSI=build/psinit_k$K
+rm -rf "$PSI"; mkdir -p "$PSI"
+unzip -o -q "$XSA" psu_init.c psu_init.h -d "$PSI"
+"$GCC" -nostdlib -ffreestanding -fno-builtin -Os -mgeneral-regs-only -mstrict-align -w \
+       -I sw/psinit/include -I "$PSI" -T sw/psinit/psinit.ld \
+       -o results/psinit_k$K.elf sw/start.S sw/psinit/psinit_main.c "$PSI/psu_init.c"
+"$SIZE" results/psinit_k$K.elf
+
 # Raw image (load address 0x100000, entry 0x100800) for board_debug2.tcl method B, which writes
 # it straight into DDR through the DAP instead of `dow` through the core.
 "$OBJCOPY" -O binary "$ELF" "$BIN"
 
 "$SIZE" "$ELF"
-echo "SW_MIN_DONE k=$K elf=$ELF bin=$BIN psu_init=results/psu_init_k$K.tcl"
+echo "SW_MIN_DONE k=$K elf=$ELF bin=$BIN psinit=results/psinit_k$K.elf psu_init=results/psu_init_k$K.tcl"

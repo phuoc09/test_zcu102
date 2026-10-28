@@ -22,6 +22,14 @@
 #define HIL_RESULT_ADDR  0x10000000UL
 #define HIL_EXC_ADDR     0x10000040UL
 #define HIL_STAGE_ADDR   0x10000080UL
+/* Host mailbox, written after `dow`: [0] = HIL_CTRL_MAGIC, [1] = ILA wait in ms.
+ * Without the magic the app keeps the 5 s wait the ILA flow (flow/arm_ila.tcl) needs. */
+#define HIL_CTRL_ADDR    0x100000C0UL
+#define HIL_CTRL_MAGIC   0x57414954U    /* "WAIT" */
+#define HIL_ILA_WAIT_MS  5000U
+/* System counter (IOU_SCNTRS): psu_init / FSBL write its frequency and enable it. */
+#define SCNTRS_CNTCR     0xFF260000UL
+#define SCNTRS_FREQ      0xFF260020UL
 
 #define R_X(i)   (PE_BASE + 0x000UL + 4UL*(i))
 #define R_W(i)   (PE_BASE + 0x100UL + 4UL*(i))
@@ -98,6 +106,23 @@ static inline uint64_t rd_cntfrq(void)
     return v;
 }
 
+/* `rst -processor` clears CNTFRQ_EL0, so fall back to the frequency psu_init / FSBL left in
+ * the system counter; make sure the counter runs.  Returns 0 if no usable timer. */
+static uint64_t timer_freq(void)
+{
+    uint64_t f = rd_cntfrq();
+    if (f <= 1000)
+        f = rd32(SCNTRS_FREQ);
+    if (f <= 1000)
+        return 0;
+    if (!(rd32(SCNTRS_CNTCR) & 1U))
+        wr32(SCNTRS_CNTCR, rd32(SCNTRS_CNTCR) | 1U);
+    uint64_t c0 = rd_cntpct();
+    for (volatile int i = 0; i < 10000; i++)
+        ;
+    return rd_cntpct() != c0 ? f : 0;
+}
+
 static inline uint32_t fnv_word(uint32_t h, uint32_t w)
 {
     for (int i = 0; i < 4; i++) {
@@ -137,14 +162,16 @@ int main(void)
     uart_puts("\r\n");
 
     /* Let the host arm the ILA after `con`. */
-    uint64_t frq = rd_cntfrq();
+    uint32_t wait_ms = (rd32(HIL_CTRL_ADDR) == HIL_CTRL_MAGIC) ? rd32(HIL_CTRL_ADDR + 4UL)
+                                                              : HIL_ILA_WAIT_MS;
+    uint64_t frq = timer_freq();
     uint64_t t0 = rd_cntpct();
-    if (frq > 1000) {
-        while ((rd_cntpct() - t0) < 5ULL * frq)
+    if (frq) {
+        while ((rd_cntpct() - t0) < (uint64_t)wait_ms * frq / 1000ULL)
             ;
     } else {
-        /* No CNTFRQ (JTAG boot has no FSBL): rough ~5 s loop at ~1.2 GHz. */
-        for (volatile uint64_t i = 0; i < 1500000000ULL; i++)
+        /* No timer: rough loop, ~5 s at 1.2 GHz for the default wait (much longer with caches off). */
+        for (volatile uint64_t i = 0; i < (uint64_t)wait_ms * 300000ULL; i++)
             ;
     }
 
