@@ -199,3 +199,20 @@ Lưu ý:
 - Nếu một lần chạy lỗi, DAP có thể ở trạng thái `AXI AP transaction error` và board phải reset cứng trước lần sau
   (script thoát với `NO_PSU_OR_APU`). Mỗi lần chạy lỗi cần reset board.
 - Với xsct 2025.2, đọc kết quả phải dùng `mrd -value` (đã dùng trong script); `flow/run_hil.sh`/`run_app.tcl` cũ chưa cập nhật.
+
+## Kết quả `board_run.tcl 4 0` trên zcu102-1 (28/10): K = 4 và K = 0 đều PASS
+
+Log: `results/hil_run_k4_k0.log`.
+
+| | K = 4 | K = 0 |
+|---|---|---|
+| Vector sai | 0 / 2000 | 0 / 2000 |
+| FNV got = exp | `0xA85E4B0C` | `0x6A15E630` |
+| Thanh ghi K | 4 | 0 |
+| Thời gian | 21.2 ms (10.6 µs/vector, cache tắt, bị giới hạn bởi MMIO AXI4-Lite) | 21.2 ms |
+| Khởi tạo PS | `fsbl` | `fsbl` |
+
+- `psinit` chưa dùng được: cả hai K báo `status=0x50534900` (không phải `0x50534901`) và không có DDR dùng được,
+  nên script tự chuyển sang FSBL. Nguyên nhân chưa điều tra.
+- Sau FSBL vẫn phải xoá `AFI_FS` bits[9:8] (`0xA00 -> 0x800`) như trước.
+- Chưa chụp ILA.

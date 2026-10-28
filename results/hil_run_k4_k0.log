@@ -1,0 +1,31 @@
+STEP1 k=4 bitstream: FPGA is configured
+STEP2 k=4 psinit status=0x50534900 psu_init_ret=0x00000000 printf=0  (0x50534901 = OK)
+NOTE k=4: init with psinit did not give a usable DDR
+STEP1 k=4 bitstream: FPGA is configured
+STEP2 k=4 FSBL done, pc=00000000fffc0c08
+STEP3 k=4 (fsbl) DDR block test: 0 / 1024 mismatches
+STEP4 k=4 AFI_FS 0x00000A00 -> 0x00000800  (bits 9:8 must be 0)
+STEP4 k=4 PL: N=0x00000010 K=0x00000004 WAIT=0x0000000C
+STEP5 k=4 app running (ILA wait 0 ms)
+STEP5 k=4 pc after run: 0000000000101e84  (1 s)
+RESULT k=4 (fsbl): 0x48494C31 0x000007D0 0x00000000 0xFFFFFFFF 0x00000000 0x00000000 0xA85E4B0C 0xA85E4B0C 0x000007D0 0x00000001 0x00000010 0x00000004 0x5A5AC33C 0x000052FF 0xA5A5A5A5 0xA85E4B0C
+STAGE  k=4: stage=0x53540006 vector=0x000007CF
+EXCEPTION k=4: magic 0x00000000 (0xE7C0DEAD = recorded) ESR=0x00000000 ELR=0x00000000 FAR=0x00000000
+HIL_PASS k=4 init=fsbl run_us=21247 (10.62 us/vector, caches off, AXI4-Lite MMIO bound)
+STEP1 k=0 bitstream: FPGA is configured
+STEP2 k=0 psinit status=0x50534900 psu_init_ret=0x00000000 printf=0  (0x50534901 = OK)
+NOTE k=0: init with psinit did not give a usable DDR
+STEP1 k=0 bitstream: FPGA is configured
+STEP2 k=0 FSBL done, pc=00000000fffc0c08
+STEP3 k=0 (fsbl) DDR block test: 0 / 1024 mismatches
+STEP4 k=0 AFI_FS 0x00000A00 -> 0x00000800  (bits 9:8 must be 0)
+STEP4 k=0 PL: N=0x00000010 K=0x00000000 WAIT=0x0000000C
+STEP5 k=0 app running (ILA wait 0 ms)
+STEP5 k=0 pc after run: 0000000000101e84  (1 s)
+RESULT k=0 (fsbl): 0x48494C31 0x000007D0 0x00000000 0xFFFFFFFF 0x00000000 0x00000000 0x6A15E630 0x6A15E630 0x000007D0 0x00000001 0x00000010 0x00000000 0x5A5AC33C 0x00005301 0xA5A5A5A5 0x6A15E630
+STAGE  k=0: stage=0x53540006 vector=0x000007CF
+EXCEPTION k=0: magic 0x00000000 (0xE7C0DEAD = recorded) ESR=0x00000000 ELR=0x00000000 FAR=0x00000000
+HIL_PASS k=0 init=fsbl run_us=21249 (10.62 us/vector, caches off, AXI4-Lite MMIO bound)
+== SUMMARY
+HIL_PASS k=4 init=fsbl run_us=21247 (10.62 us/vector, caches off, AXI4-Lite MMIO bound)
+HIL_PASS k=0 init=fsbl run_us=21249 (10.62 us/vector, caches off, AXI4-Lite MMIO bound)
