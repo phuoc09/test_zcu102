@@ -35,7 +35,7 @@ if {[catch {tgt "PS TAP"}]} { tgt "PSU" }
 fpga -file $bit
 puts "BD_STEP fpga programmed: [fpga -state]"
 
-tgt "APU"
+tgt "APU*"   ;# xsct 2025.2 names it "APU (L2 Cache Reset)"
 source $psu
 psu_init
 after 1000

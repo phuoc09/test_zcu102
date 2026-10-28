@@ -12,6 +12,8 @@ Repo này chỉ chứa file để nạp và chạy, không có RTL.
 | `results/hil_k{4,0}.ltx` | File probe của ILA |
 | `results/util_k*.rpt`, `timing_k*.rpt` | Báo cáo tài nguyên và timing (WNS +0.043 ns cho K = 4 ở 200 MHz) |
 | `flow/board_debug.tcl` | Chạy một lần trên board rồi in toàn bộ thông tin chẩn đoán |
+| `flow/board_debug2.tcl` | **Chạy cái này trước.** Tách nguyên nhân A53 không thấy code sau `dow`, rồi thử cả hai cách nạp |
+| `results/pe_hil_k{4,0}.bin` | Ảnh nhị phân thô của ELF (đặt ở `0x100000`, entry `0x100800`), dùng cho cách nạp B |
 | `flow/arm_ila.tcl` | (Tuỳ chọn) bật ILA và lưu capture CSV |
 
 ## Yêu cầu phần cứng
@@ -53,6 +55,31 @@ Word 14 = `0xA5A5A5A5` nghĩa là bit-exact PASS. FNV mong đợi là `0xA85E4B0
 
 Các mốc stage: 1 vào `main`, 2 đã ghi UART, 3 bắt đầu đọc PL, 4 đã đọc xong thanh ghi PL,
 5 chạy xong 2000 vector, 6 đã ghi khối kết quả.
+
+## Lần chạy thứ 2 (28/10): `board_debug2.tcl`
+
+Lần chạy trước PL đã đúng (N = 0x10, K = 0x4) nhưng sau `dow` ô `0x100800` không phải `0x10004000`.
+Script này làm theo thứ tự sau, mỗi bước in ra một dòng:
+
+1. Khởi tạo như cũ (`APU*`, `configparams force-mem-access 1`, `psu_protection`), in `RST_FPD_APU`
+   trước và sau `rst -processor`. Nếu bit 8 (L2 cache reset) vẫn bằng 1, script gỡ bit này và in `WARN`.
+2. `BLOCK`: ghi 1024 word liên tiếp qua DAP, đọc lại qua DAP và qua A53 #0. `WORD`: ghi qua A53, đọc qua DAP.
+3. Cách A: `dow` ELF qua core, kiểm 72 word đọc qua cả hai đường (`VERIFY method A`).
+4. Nếu cách A sai hoặc không PASS thì dùng cách B: ghi `pe_hil_k$K.bin` thẳng vào DDR qua DAP (`dow -data`),
+   `rst -processor`, đặt `pc = 0x100800` rồi `con`.
+
+```bash
+HIL_URL=TCP:172.16.36.2:3121 HIL_SER=210308A65523 xsct -no-ini flow/board_debug2.tcl 4 2>&1 | tee run2_k4.log
+```
+
+Gửi lại toàn bộ `run2_k4.log`. Cần nhất là các dòng `RST_FPD_APU`, `BLOCK`, `WORD`, `VERIFY`, `RESULT` và dòng cuối `HIL_PASS` hoặc `HIL_FAIL`.
+
+| Thấy gì | Nghĩa là |
+|---|---|
+| `BLOCK ... via dap` có mismatch | DDR hỏng khi ghi burst (psu_init/DDR training), không phải lỗi phần mềm |
+| `via dap` đúng nhưng `via cpu` sai | A53 nhìn bộ nhớ khác DAP (L2 reset hoặc cache) |
+| `VERIFY method A` sai nhưng `method B` đúng | `dow` của xsct 2025.2 ghi qua core bị hỏng, dùng cách B |
+| `HIL_PASS` | xong, word 14 = `0xA5A5A5A5` |
 
 ## ILA (tuỳ chọn)
 
