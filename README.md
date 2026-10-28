@@ -115,9 +115,9 @@ Gửi lại toàn bộ `run2_k4.log`. Cần nhất là các dòng `RST_FPD_APU`,
 | `VERIFY method A` sai nhưng `method B` đúng | `dow` của xsct 2025.2 ghi qua core bị hỏng, dùng cách B |
 | `HIL_PASS` | xong, word 14 = `0xA5A5A5A5` |
 
-Kết quả trên zcu102-1 (28/10): PL đúng, nhưng `BLOCK` báo 79/1024 word sai. DDR của board đó ghi khối
-bị lỗi nên app không chạy được. `psu_init` khớp hoàn toàn preset DDR của ZCU102 (board file 3.3/3.4),
-vì vậy cần thử trên board khác (zcu102-2).
+Kết quả (28/10): `BLOCK` sai 79/1024 word trên zcu102-1 và 38/1024 trên zcu102-2 (cùng một lỗi trên hai board).
+`psu_init` khớp hoàn toàn preset DDR của ZCU102 (board file 3.3/3.4) và cấu hình DDR trong workspace Vitis
+của lab, nên lỗi không nằm ở cấu hình. Dùng FSBL để khởi tạo PS/DDR, xem mục dưới.
 
 ## ILA (tuỳ chọn)
 
@@ -126,3 +126,34 @@ App đợi 5 giây sau khi chạy rồi mới gửi vector đầu tiên (vector 
 ```bash
 HIL_URL=TCP:172.16.36.2:3121 vivado -mode batch -source flow/arm_ila.tcl -tclargs 4
 ```
+
+## Chạy được trên board (28/10): khởi tạo bằng FSBL — `board_run_fsbl.tcl`
+
+**K = 4 trên zcu102-1: HIL_PASS, 2000/2000 vector bit-exact, `mismatches=0`, `fnv=0xA85E4B0C`**
+(chạy 2 lần liên tiếp, log: `results/hil_run_zcu102_k4_PASS.log`).
+
+```bash
+HIL_URL=TCP:172.16.36.2:3121 HIL_SER=210308A65523 xsct -no-ini flow/board_run_fsbl.tcl 4
+```
+
+Script làm: `rst -system` → nạp bitstream → chạy `results/fsbl_zcu102.elf` đến `XFsbl_Exit` (FSBL khởi tạo PS và DDR)
+→ kiểm khối DDR 1024 word → đặt lại độ rộng cổng PS→PL → `dow` ELF → chạy → đọc khối kết quả.
+
+Hai nguyên nhân của các lỗi trước:
+
+1. **DDR**: `psu_init.tcl` chạy qua DAP làm DDR hỏng khi ghi khối (46–79/1024 word sai, ảnh `dow` đọc ra sai, A53 rơi về `0x200`).
+   Sau FSBL cùng phép thử cho 0 lỗi. FSBL lấy từ platform Vitis của lab (`vitis_test/platform_300`, cấu hình DDR
+   giống hệt `psu_init` ở đây). Chưa rõ vì sao chạy `psu_init` qua DAP thì lỗi.
+2. **Độ rộng cổng AXI PS→PL**: FSBL đặt `0xFD615000` bits[9:8] = 2 (128-bit) còn thiết kế này là 32-bit. Khi đó
+   chỉ thanh ghi ở offset chia hết cho 16 đọc đúng (`N` @0x210, scratch @0x220), còn `K` @0x214 và `WAIT` @0x218 đọc ra 0.
+   Script ghi lại bits[9:8] = 0 (đúng như `psu_init`) trước khi chạy app.
+
+Lưu ý:
+
+- **Script vá 1 lệnh trong RAM** (`0x101db4`, `movk x1,#0x5968,lsl#16` → `#0x0001`) để bỏ đoạn đợi 5 s dành cho ILA: sau `rst -processor`
+  cache tắt nên vòng đợi 1.5e9 lần lặp kéo dài hàng chục phút. File ELF không bị sửa. **ILA không được chụp ở chế độ này** và
+  giá trị `us` trong khối kết quả không dùng được.
+- Mới chạy **K = 4**. K = 0 chưa chạy bằng script này.
+- Nếu một lần chạy lỗi, DAP có thể ở trạng thái `AXI AP transaction error` và board phải reset cứng trước lần sau
+  (script thoát với `NO_PSU_OR_APU`). Mỗi lần chạy lỗi cần reset board.
+- Với xsct 2025.2, đọc kết quả phải dùng `mrd -value` (đã dùng trong script); `flow/run_hil.sh`/`run_app.tcl` cũ chưa cập nhật.
