@@ -7,7 +7,7 @@
 module tb_axi_lite;
   parameter int N     = 16;
   parameter int K     = 4;
-  parameter int MAXT  = 2000;
+  parameter int MAXT  = 8192;
 
   localparam int XB = 12'h000;
   localparam int WB = 12'h100;

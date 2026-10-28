@@ -1,36 +1,36 @@
-INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/master_thesis/himam-repro.tar/himam_lut/rtl_narrow/alm_fp.sv" into library work
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/test_zcu102/pe_rtl/alm_fp.sv" into library work
 INFO: [VRFC 10-311] analyzing module alm_fp
-INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/master_thesis/himam-repro.tar/himam_lut/rtl_narrow/alm_lut_fp.sv" into library work
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/test_zcu102/pe_rtl/alm_lut_fp.sv" into library work
 INFO: [VRFC 10-311] analyzing module alm_lut_fp
-INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/master_thesis/himam-repro.tar/himam_lut/rtl_narrow/comparator_tree_mp.sv" into library work
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/test_zcu102/pe_rtl/comparator_tree_mp.sv" into library work
 INFO: [VRFC 10-311] analyzing module comparator_tree_mp
-INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/master_thesis/himam-repro.tar/himam_lut/rtl_narrow/comparator_tree.sv" into library work
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/test_zcu102/pe_rtl/comparator_tree.sv" into library work
 INFO: [VRFC 10-311] analyzing module comparator_tree
-INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/master_thesis/himam-repro.tar/himam_lut/rtl_narrow/fp_add.sv" into library work
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/test_zcu102/pe_rtl/fp_add.sv" into library work
 INFO: [VRFC 10-311] analyzing module fp_add
-INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/master_thesis/himam-repro.tar/himam_lut/rtl_narrow/fp_mul.sv" into library work
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/test_zcu102/pe_rtl/fp_mul.sv" into library work
 INFO: [VRFC 10-311] analyzing module fp_mul
-INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/master_thesis/himam-repro.tar/himam_lut/rtl_narrow/himam_mp.sv" into library work
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/test_zcu102/pe_rtl/himam_mp.sv" into library work
 INFO: [VRFC 10-311] analyzing module himam_mp
-INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/master_thesis/himam-repro.tar/himam_lut/rtl_narrow/himam_sp.sv" into library work
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/test_zcu102/pe_rtl/himam_sp.sv" into library work
 INFO: [VRFC 10-311] analyzing module himam_sp
-INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/master_thesis/himam-repro.tar/himam_lut/rtl_narrow/log_rom.sv" into library work
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/test_zcu102/pe_rtl/log_rom.sv" into library work
 INFO: [VRFC 10-311] analyzing module log_rom
-INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/master_thesis/himam-repro.tar/himam_lut/rtl_narrow/mac_pe.sv" into library work
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/test_zcu102/pe_rtl/mac_pe.sv" into library work
 INFO: [VRFC 10-311] analyzing module mac_pe
-INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/master_thesis/himam-repro.tar/himam_lut/rtl_narrow/mam_pe.sv" into library work
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/test_zcu102/pe_rtl/mam_pe.sv" into library work
 INFO: [VRFC 10-311] analyzing module mam_pe
-INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/master_thesis/himam-repro.tar/himam_lut/rtl_narrow/pe_top.sv" into library work
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/test_zcu102/pe_rtl/pe_top.sv" into library work
 INFO: [VRFC 10-311] analyzing module pe_top
-INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/master_thesis/himam-repro.tar/himam_lut/rtl_narrow/sorting_block_mp.sv" into library work
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/test_zcu102/pe_rtl/sorting_block_mp.sv" into library work
 INFO: [VRFC 10-311] analyzing module sorting_block_mp
-INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/master_thesis/himam-repro.tar/himam_lut/rtl_narrow/sorting_block.sv" into library work
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/test_zcu102/pe_rtl/sorting_block.sv" into library work
 INFO: [VRFC 10-311] analyzing module sorting_block
-INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/master_thesis/hil/rtl/pe_axi_lite_n16_k0.sv" into library work
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/test_zcu102/rtl/pe_axi_lite_n16_k0.sv" into library work
 INFO: [VRFC 10-311] analyzing module pe_axi_lite_n16_k0
-INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/master_thesis/hil/rtl/pe_axi_lite_n16_k4.sv" into library work
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/test_zcu102/rtl/pe_axi_lite_n16_k4.sv" into library work
 INFO: [VRFC 10-311] analyzing module pe_axi_lite_n16_k4
-INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/master_thesis/hil/rtl/pe_axi_lite.sv" into library work
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/test_zcu102/rtl/pe_axi_lite.sv" into library work
 INFO: [VRFC 10-311] analyzing module pe_axi_lite
-INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/master_thesis/hil/tb/tb_axi_lite.sv" into library work
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/phuoc/test_zcu102/tb/tb_axi_lite.sv" into library work
 INFO: [VRFC 10-311] analyzing module tb_axi_lite

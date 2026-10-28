@@ -1,7 +1,7 @@
 /*
  * Minimal bare-metal PS driver for the HIL run -- no BSP, no Vitis Java, no
  * libc.  Compiled with aarch64-none-elf-gcc and downloaded with xsct `dow`.
- * psu_init.tcl has already initialised DDR and both UARTs.
+ * The FSBL (flow/board_run.tcl) has already initialised the PS, DDR and both UARTs.
  *
  * PS (A53) writes vectors over AXI4-Lite to the HIMAM PE in the PL, polls
  * VEC_DONE, reads Y and compares against the bit-exact Python model.
@@ -13,6 +13,8 @@
  *       4 PL registers read back, 5 all vectors done, 6 result block written
  *   [1] index of the vector being processed
  * An exception record (see start.S) is at 0x10000040.
+ * Mismatches per vector part (random / discrim / edge, see vectors/gen_hil_vectors.py) are at
+ * 0x10000100: [0] 0x50415254 "PART", [1] number of parts, [2..] mismatches of each part.
  */
 #include <stdint.h>
 #include "hil_config.h"
@@ -22,6 +24,9 @@
 #define HIL_RESULT_ADDR  0x10000000UL
 #define HIL_EXC_ADDR     0x10000040UL
 #define HIL_STAGE_ADDR   0x10000080UL
+#define HIL_PART_ADDR    0x10000100UL
+#define HIL_PART_MAGIC   0x50415254U    /* "PART" */
+#define HIL_SCR_PATTERN  0x5A5AC33CU
 /* Host mailbox, written after `dow`: [0] = HIL_CTRL_MAGIC, [1] = ILA wait in ms.
  * Without the magic the app keeps the 5 s wait the ILA flow (flow/arm_ila.tcl) needs. */
 #define HIL_CTRL_ADDR    0x100000C0UL
@@ -140,6 +145,7 @@ int main(void)
     uint32_t first_got = 0, first_exp = 0;
     uint32_t fnv_got = FNV_OFFSET, fnv_exp = FNV_OFFSET;
     uint32_t status = 0, vec_done = 0, us = 0;
+    uint32_t part_mism[HIL_NPARTS] = {0};
 
     for (int i = 0; i < 8; i++)          /* clear a stale exception record */
         wr32(HIL_EXC_ADDR + 4UL*i, 0U);
@@ -151,7 +157,7 @@ int main(void)
     stage(3);
     uint32_t n_rd = rd32(R_N);
     uint32_t k_rd = rd32(R_K);
-    wr32(R_SCR, 0x5A5AC33CU);
+    wr32(R_SCR, HIL_SCR_PATTERN);
     uint32_t scr_rd = rd32(R_SCR);
     stage(4);
 
@@ -178,7 +184,10 @@ int main(void)
     wr32(R_TRIG, 1U);                    /* marker pulse in the ILA capture */
 
     uint64_t run0 = rd_cntpct();
+    uint32_t part = 0;
     for (uint32_t t = 0; t < HIL_NVEC; t++) {
+        while (part < HIL_NPARTS - 1 && t >= hil_part_end[part])
+            part++;
         wr32(HIL_STAGE_ADDR + 4UL, t);
         for (int i = 0; i < HIL_N; i++)
             wr32(R_X(i), HIL_VEC[t][i]);
@@ -215,6 +224,7 @@ int main(void)
                 first_exp = exp;
             }
             mismatches++;
+            part_mism[part]++;
         }
     }
     uint64_t run1 = rd_cntpct();
@@ -223,8 +233,15 @@ int main(void)
         us = (uint32_t)((run1 - run0) * 1000000ULL / frq);
 
     vec_done = rd32(R_VEC);
+    /* The PL must also be the bitstream this ELF was built for (K, N) with a working AXI path. */
     int pass = (mismatches == 0) && (vec_done == HIL_NVEC)
-               && (fnv_got == fnv_exp) && (fnv_got == HIL_FNV_EXPECT);
+               && (fnv_got == fnv_exp) && (fnv_got == HIL_FNV_EXPECT)
+               && (k_rd == HIL_K) && (n_rd == HIL_N) && (scr_rd == HIL_SCR_PATTERN);
+
+    wr32(HIL_PART_ADDR, HIL_PART_MAGIC);
+    wr32(HIL_PART_ADDR + 4UL, HIL_NPARTS);
+    for (int i = 0; i < HIL_NPARTS; i++)
+        wr32(HIL_PART_ADDR + 8UL + 4UL*i, part_mism[i]);
 
     res[0]  = 0x48494C31U;
     res[1]  = HIL_NVEC;

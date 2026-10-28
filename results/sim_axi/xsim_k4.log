@@ -8,8 +8,8 @@ source xsim.dir/axi_k4/xsim_script.tcl
 # xsim {axi_k4} -autoloadwcfg -runall
 Time resolution is 1 ps
 run -all
-N=16 K=4 AXI 2000 vectors, errors=0, vec_done=2000
+N=16 K=4 AXI 4085 vectors, errors=0, vec_done=4085
 N=16 K=4 AXI PASS
-$finish called at time : 3800300 ns : File "/home/phuoc/master_thesis/hil/tb/tb_axi_lite.sv" Line 180
+$finish called at time : 7761800 ns : File "/home/phuoc/test_zcu102/tb/tb_axi_lite.sv" Line 180
 exit
-INFO: [Common 17-206] Exiting xsim at Wed Oct 21 23:41:12 2026...
+INFO: [Common 17-206] Exiting xsim at Wed Oct 28 16:24:48 2026...

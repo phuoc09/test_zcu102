@@ -29,25 +29,39 @@ def sample(rng, shape, signed):
     return v
 
 
-def gen_pe(n, k, t, sparsity, seed=42):
-    rng = np.random.default_rng(seed)
+def sample_pe(rng, n, t, sparsity):
     x = sample(rng, (t, n), False)
     if sparsity > 0:
         x = np.where(rng.random((t, n)) < sparsity, F32(0.0), x)
     w = sample(rng, (t, n), True)
     bias = sample(rng, (t,), True)
+    return x, w, bias
+
+
+def expect_pe(x, w, bias, k):
+    """Bit-exact PE output for float32 arrays x, w (T, N) and bias (T,) with key K
+    (0 = ALM).  K = None ranks by the exact product (the ideal MAM)."""
     xb, wb = f32_to_bits(x).astype(np.int64), f32_to_bits(w).astype(np.int64)
     prod = (x * w).astype(F32)
-    keys = pack_key(magnitude(xb, wb, k), wb)
+    mag = f32_to_bits(np.abs(prod)).astype(np.int64) if k is None else magnitude(xb, wb, k)
+    keys = pack_key(mag, wb)
     imax, imin = select_pair_tree(keys)
-    rows = np.arange(t)
-    y = (F32(prod[rows, imax] + prod[rows, imin]) + bias).astype(F32)
+    rows = np.arange(len(x))
+    return (F32(prod[rows, imax] + prod[rows, imin]) + bias).astype(F32)
+
+
+def pe_lines(x, w, bias, y):
     lines = []
-    for i in range(t):
+    for i in range(len(x)):
         f = [f"{v:08x}" for v in f32_to_bits(x[i])] + [f"{v:08x}" for v in f32_to_bits(w[i])]
         f += [f"{f32_to_bits(bias[i]):08x}", f"{f32_to_bits(y[i]):08x}"]
         lines.append(" ".join(f))
     return lines
+
+
+def gen_pe(n, k, t, sparsity, seed=42):
+    x, w, bias = sample_pe(np.random.default_rng(seed), n, t, sparsity)
+    return pe_lines(x, w, bias, expect_pe(x, w, bias, k))
 
 
 def gen_key(k, t, seed=7):

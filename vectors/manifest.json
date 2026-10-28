@@ -1,14 +1,36 @@
 {
-  "nvec": 2000,
+  "nvec": 4085,
   "N": 16,
-  "sparsity": 0.5,
+  "parts": {
+    "random": [
+      0,
+      2000
+    ],
+    "discrim": [
+      2000,
+      3500
+    ],
+    "edge": [
+      3500,
+      4085
+    ]
+  },
   "fnv_expected": {
-    "0": "0x6A15E630",
-    "4": "0xA85E4B0C"
+    "0": "0xDFE4E261",
+    "4": "0x21517BF0"
   },
   "sha256": {
-    "0": "98a4c679e58e532ca5bac3beb979cb0449044bdf9c4964586b1c48f1ebe5545f",
-    "4": "06491b51529de260e4b9a6bf61aa4cbefa6603177d8e7fb63d8347cbc992d51d"
+    "0": "0d594d162e097091f814489003ec43afd64de334a13635582a107b0dc2bd0f27",
+    "4": "f759a9d7e401c5601dd5a43264c2593b61298c3aa0f9ac5574e5ce8368a702da"
+  },
+  "cross_k4_on_k0": {
+    "mismatches": 1124,
+    "first_index": 23,
+    "per_part": {
+      "random": 26,
+      "discrim": 1000,
+      "edge": 98
+    }
   },
   "source": "model/gen_vectors_lut.py"
 }
