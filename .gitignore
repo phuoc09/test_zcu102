@@ -1,0 +1,8 @@
+vivado/
+logs/
+.Xil/
+*.jou
+*.log.bak
+results/sim_axi/*.hex
+results/sim_axi/xsim.dir/
+run*_k*.log

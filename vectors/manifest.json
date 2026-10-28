@@ -1,0 +1,14 @@
+{
+  "nvec": 2000,
+  "N": 16,
+  "sparsity": 0.5,
+  "fnv_expected": {
+    "0": "0x6A15E630",
+    "4": "0xA85E4B0C"
+  },
+  "sha256": {
+    "0": "98a4c679e58e532ca5bac3beb979cb0449044bdf9c4964586b1c48f1ebe5545f",
+    "4": "06491b51529de260e4b9a6bf61aa4cbefa6603177d8e7fb63d8347cbc992d51d"
+  },
+  "source": "model/gen_vectors_lut.py"
+}

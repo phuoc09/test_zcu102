@@ -1,0 +1,15 @@
+
+****** xsim v2022.1 (64-bit)
+  **** SW Build 3526262 on Mon Apr 18 15:47:01 MDT 2022
+  **** IP Build 3524634 on Mon Apr 18 20:55:01 MDT 2022
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+
+source xsim.dir/axi_k4/xsim_script.tcl
+# xsim {axi_k4} -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+N=16 K=4 AXI 2000 vectors, errors=0, vec_done=2000
+N=16 K=4 AXI PASS
+$finish called at time : 3800300 ns : File "/home/phuoc/master_thesis/hil/tb/tb_axi_lite.sv" Line 180
+exit
+INFO: [Common 17-206] Exiting xsim at Wed Oct 21 23:41:12 2026...

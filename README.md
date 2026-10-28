@@ -1,20 +1,54 @@
 # test_zcu102
 
-Bitstream và phần mềm build sẵn để chạy thử PE HIMAM (N = 16, FP32) trên **ZCU102** (xczu9eg).
-Repo này chỉ chứa file để nạp và chạy, không có RTL.
+PE HIMAM (N = 16, FP32) chạy hardware-in-the-loop trên **ZCU102** (xczu9eg-ffvb1156-2-e). Repo có
+cả file dựng sẵn để nạp ngay và toàn bộ nguồn để build lại từ RTL đến bitstream, ELF và `.bin`.
 
-| File | Nội dung |
+## Cấu trúc
+
+| Đường dẫn | Nội dung |
 |---|---|
-| `results/hil_zcu102_k4.bit` | PE với khoá LUT-ranking k = 4, AXI4-Lite ở `0xA0000000`, ILA |
-| `results/hil_zcu102_k0.bit` | PE với khoá ALM gốc (HIMAM), để đối chứng |
-| `results/pe_hil_k{4,0}.elf` | App bare-metal cho A53 #0: ghi 2000 vector qua AXI4-Lite, so bit-exact |
-| `results/psu_init_k{4,0}.tcl` | Khởi tạo PS (DDR, UART, PL clock) trích từ XSA |
-| `results/hil_k{4,0}.ltx` | File probe của ILA |
-| `results/util_k*.rpt`, `timing_k*.rpt` | Báo cáo tài nguyên và timing (WNS +0.043 ns cho K = 4 ở 200 MHz) |
-| `flow/board_debug.tcl` | Chạy một lần trên board rồi in toàn bộ thông tin chẩn đoán |
-| `flow/board_debug2.tcl` | **Chạy cái này trước.** Tách nguyên nhân A53 không thấy code sau `dow`, rồi thử cả hai cách nạp |
-| `results/pe_hil_k{4,0}.bin` | Ảnh nhị phân thô của ELF (đặt ở `0x100000`, entry `0x100800`), dùng cho cách nạp B |
-| `flow/arm_ila.tcl` | (Tuỳ chọn) bật ILA và lưu capture CSV |
+| `pe_rtl/` | RTL của PE: `pe_top`, HIMAM/MAM, khoá ALM và LUT-ranking (`log_rom`), cây so sánh, FP mul/add |
+| `rtl/` | Slave AXI4-Lite + thanh ghi vector bọc `pe_top`; wrapper N = 16, K = 0/4; vỏ Verilog cho BD + ILA |
+| `bd/build_bd.tcl` | Block design: Zynq UltraScale+ PS (preset ZCU102), AXI interconnect, PE, ILA, MMCM từ SI570 |
+| `constraints/zcu102_hil.xdc` | Chân SI570 300 MHz (AL8/AL7), ràng buộc clock |
+| `model/` | Mô hình Python bit-exact của PE (sinh vector và giá trị mong đợi) |
+| `vectors/gen_hil_vectors.py` | Sinh 2000 vector, `sw/hil_vectors.h` và FNV tham chiếu |
+| `tb/` | Testbench AXI4-Lite + PE, so bit-exact (`run_sim.sh`) |
+| `sw/` | App bare-metal A53 (`start.S`, `pe_hil_min.c`, `link.ld`), không cần BSP |
+| `flow/build_all.sh` | BD → bitstream + XSA → ELF + `.bin` + `psu_init` |
+| `flow/build_hil.tcl`, `flow/build_sw_min.sh` | Hai bước con của `build_all.sh` |
+| `flow/board_debug2.tcl` | **Chạy trên board** (xsct, hw_server cục bộ hoặc từ xa), in đầy đủ chẩn đoán |
+| `flow/board_debug.tcl`, `flow/arm_ila.tcl` | Script chạy board bản đầu; bật ILA và lưu CSV |
+| `flow/run_hil.sh`, `prep_hw.tcl`, `run_app.tcl`, `check_result.py` | Flow cũ khi board cắm thẳng vào máy build |
+| `results/` | File dựng sẵn: `hil_zcu102_k{4,0}.bit/.xsa/.ltx`, `pe_hil_k{4,0}.elf/.bin`, `psu_init_k{4,0}.tcl`, báo cáo util/timing, log mô phỏng |
+
+K = 4 là PE dùng khoá LUT-ranking (bản chính); K = 0 là khoá ALM gốc của HIMAM, để đối chứng.
+
+## Build lại từ đầu
+
+Cần Vivado 2022.1 (board files ZCU102 có sẵn trong bản cài), Python 3 + NumPy, và một toolchain
+`aarch64-none-elf` (có sẵn trong xsct/Vitis). Đường dẫn mặc định là `/opt/Xilinx/Vivado/2022.1` và
+`/opt/petalinux/tools/xsct`. Máy khác thì đặt:
+
+```bash
+export VIVADO_SETTINGS=/tools/Xilinx/Vivado/2022.1/settings64.sh
+export AARCH64_TC=/tools/Xilinx/Vitis/2022.1/gnu/aarch64/lin/aarch64-none/bin
+```
+
+```bash
+python3 vectors/gen_hil_vectors.py 2000 16   # vector + sw/hil_vectors.h + FNV
+./tb/run_sim.sh "0 4"                        # mô phỏng AXI, phải in "AXI SIM ALL PASS"
+./flow/build_all.sh 4                        # BD -> bitstream/XSA -> ELF/bin/psu_init (khoảng 30-40 phút)
+./flow/build_all.sh 0                        # (tuỳ chọn) bản ALM
+```
+
+Kết quả nằm trong `results/` (ghi đè file dựng sẵn) và project Vivado nằm ở `vivado/hil_k$K/`.
+Chỉ đổi phần mềm thì không cần build lại bitstream: `./flow/build_sw_min.sh 4` dùng
+`results/hil_zcu102_k4.xsa` có sẵn để tạo `pe_hil_k4.elf`, `pe_hil_k4.bin`, `psu_init_k4.tcl`.
+
+Đã kiểm 28/10 trên một bản sao sạch: vector, `sw/hil_vectors.h`, `.bin` và `psu_init` dựng lại giống
+từng byte với file trong `results/`; mô phỏng AXI 2000 vector × {K = 0, K = 4}: 0 lỗi.
+Thiết kế dựng sẵn: K = 4 đạt WNS +0.043 ns, K = 0 đạt +0.007 ns ở 200 MHz.
 
 ## Yêu cầu phần cứng
 
@@ -80,6 +114,10 @@ Gửi lại toàn bộ `run2_k4.log`. Cần nhất là các dòng `RST_FPD_APU`,
 | `via dap` đúng nhưng `via cpu` sai | A53 nhìn bộ nhớ khác DAP (L2 reset hoặc cache) |
 | `VERIFY method A` sai nhưng `method B` đúng | `dow` của xsct 2025.2 ghi qua core bị hỏng, dùng cách B |
 | `HIL_PASS` | xong, word 14 = `0xA5A5A5A5` |
+
+Kết quả trên zcu102-1 (28/10): PL đúng, nhưng `BLOCK` báo 79/1024 word sai. DDR của board đó ghi khối
+bị lỗi nên app không chạy được. `psu_init` khớp hoàn toàn preset DDR của ZCU102 (board file 3.3/3.4),
+vì vậy cần thử trên board khác (zcu102-2).
 
 ## ILA (tuỳ chọn)
 

@@ -1,0 +1,20 @@
+Vivado Simulator v2022.1
+Copyright 1986-1999, 2001-2022 Xilinx, Inc. All Rights Reserved.
+Running: /opt/Xilinx/Vivado/2022.1/bin/unwrapped/lnx64.o/xelab -nolog -O0 -timescale 1ns/1ps tb_axi_lite -generic_top K=0 -s axi_k0 
+Multi-threading is on. Using 18 slave threads.
+Starting static elaboration
+Pass Through NonSizing Optimizer
+Completed static elaboration
+Starting simulation data flow analysis
+Completed simulation data flow analysis
+Time Resolution for simulation is 1ps
+Compiling module work.alm_fp_default
+Compiling module work.sorting_block_default
+Compiling module work.comparator_tree(ENTRIES=8)
+Compiling module work.fp_mul_default
+Compiling module work.fp_add_default
+Compiling module work.himam_sp(N=16)
+Compiling module work.pe_top(N=16)
+Compiling module work.pe_axi_lite(K=0)
+Compiling module work.tb_axi_lite(K=0)
+Built simulation snapshot axi_k0

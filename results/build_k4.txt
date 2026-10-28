@@ -1,0 +1,4 @@
+k 4
+top hil_wrapper
+wns 0.043
+clocks 
