@@ -57,3 +57,13 @@ Run time of the PS loop: 21.2 ms for 2000 vectors (10.6 µs/vector). With the MM
 this is the AXI4-Lite MMIO rate of the A53, not the speed of the PE; it is not a throughput figure.
 
 ILA capture: not taken yet (`HIL_ILA=1`, then `flow/arm_ila.tcl`).
+
+## DMA streaming design (05/11/2026, chưa chạy trên board)
+
+| | |
+|---|---|
+| Đường dữ liệu | DDR → AXI DMA MM2S (128 bit, HP0) → `pe_axis` → AXI DMA S2MM → DDR, 200 MHz |
+| Implementation K = 4 | WNS +0.094 ns, 7963 LUT, 17 BRAM, 0 DSP |
+| xsim, 4084 vector, K = 4 / K = 0 | `AXIS PASS errors=0`, liên tục và có ngắt quãng; 36 765 chu kỳ = 9.0 chu kỳ/vector, stall_in = 0 |
+| Giới hạn lý thuyết | 200 MHz / 9 beat = 22.2 M vector/s = 0.36 GMAC/s (giới hạn stream; PE: 1 vector/chu kỳ) |
+| Board | cần chạy: `flow/board_run_dma.tcl` |

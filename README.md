@@ -12,6 +12,7 @@ K = 4 là PE dùng khoá LUT-ranking (bản chính); K = 0 là khoá ALM gốc c
 | 28/10 `board_run_fsbl.tcl 4` (2 lần) | 2000 | PASS, 0 sai | — | — |
 | 28/10 `board_run.tcl 4 0` | 2000 | PASS, 0 sai, FNV `0xA85E4B0C` | PASS, 0 sai, FNV `0x6A15E630` | — |
 | **cần chạy:** `board_run.tcl` | 4085 | | | |
+| **cần chạy:** `board_run_dma.tcl` (DMA, đo tốc độ) | 4088 × 50 | | — | — |
 
 Chi tiết và số liệu implementation: `results/HIL_RESULTS.md`. Flow này chỉ kiểm **chức năng** (bit-exact).
 Nó không đo năng lượng: số năng lượng của PE lấy từ SAIF.
@@ -59,6 +60,52 @@ Chạy riêng một mục: `... flow/board_run.tcl 4`. Chụp ILA (tuỳ chọn)
 rồi ngay khi log in `STEP5 k=4 app running` chạy
 `HIL_URL=TCP:172.16.36.2:3121 vivado -mode batch -source flow/arm_ila.tcl -tclargs 4`.
 
+## Chạy DMA: đo tốc độ stream (cần chạy)
+
+Thiết kế thứ hai, `results/dma_zcu102_k4.bit`: **DDR → AXI DMA (MM2S) → `pe_axis` → AXI DMA (S2MM) → DDR**, toàn bộ PL
+chạy 200 MHz từ SI570 300 MHz (giống bản HIL, không phụ thuộc clock của FSBL). DMA dùng cổng S_AXI_HP0_FPD 128 bit,
+không scatter-gather. Mỗi vector là 9 beat 128 bit (X[16], W[16], bias, 3 word đệm). Kết quả gói 4 y vào một beat.
+
+```bash
+git pull
+HIL_URL=TCP:172.16.36.2:3121 HIL_SER=210308A65523 xsct -no-ini flow/board_run_dma.tcl 2>&1 | tee results/dma_run_k4.log
+```
+
+App `results/pe_dma_k4.elf` chạy hai lượt, kiểm bit-exact **từng** kết quả:
+- lượt 0: bộ 4085 vector một lần (đệm thành 4088 = bội số của 4, lặp lại 3 vector đầu);
+- lượt 1: bộ đó 50 lần trong **một** lần truyền DMA: 204 400 vector, 29.4 MB vào, 0.8 MB ra.
+
+Bộ đếm trong PL (`0xA0010000`) cho số chu kỳ, số chu kỳ PE chặn đầu vào (`stall_in`) và số chu kỳ DMA không kịp cấp
+dữ liệu (`starve`). Script tự tính tốc độ. Cuối log mong đợi (mô phỏng: 9.0 chu kỳ/vector, `stall_in` = 0):
+
+```
+== SUMMARY
+DMA_PASS k=4 vectors=204400 mismatches=0 pl_cycles=... (9.0xx cycles/vector) -> 22.xx M vectors/s = 0.35x GMAC/s at 200 MHz, in 3200 MB/s; stall_in=0 starve=...; PS timer ... us (...)
+BOARD_RUN_DMA_DONE
+```
+
+| Thấy gì | Nghĩa là |
+|---|---|
+| `DMA_PASS`, khoảng 9.0 cycles/vector, `starve` nhỏ | Stream chạy đúng giới hạn lý thuyết 200 MHz / 9 = 22.2 M vector/s |
+| `DMA_PASS` nhưng `starve` lớn (cycles/vector > 9) | DDR/HP0 không cấp kịp 3.2 GB/s; số đo là giới hạn bộ nhớ |
+| `DMA_FAIL rc=1/...` | DMA không xong trong thời gian chờ (thường do cổng HP0 hoặc reset AFI); xem dòng `STEP4` |
+| `DMA_FAIL rc=2/...` | DMA báo lỗi bus (DMAIntErr/SlvErr/DecErr) |
+| `DMA_FAIL ... mismatches=n` | Có kết quả sai; `first`, `got`, `exp` là vector sai đầu tiên |
+
+Sau FSBL, script đặt các cổng PS-PL theo XSA của thiết kế DMA (vì FSBL của lab dựng cho platform khác):
+`AFI_FS` bits[9:8] = 0 (HPM0 32 bit), `AFIFM2 RDCTRL/WRCTRL` bits[1:0] = 0 (HP0 128 bit), nhả reset `AFI_FM0..5`
+(`RST_FPD_TOP` bits[12:7]). Dòng `STEP4` in giá trị trước và sau.
+
+**Số này là gì:** tốc độ bền vững của **thiết kế stream** (giới hạn bởi 9 beat/vector), không phải tốc độ tối đa của
+PE. Pipeline của PE nhận 1 vector/chu kỳ (200 M vector/s = 3.2 GMAC/s). Muốn đo đến giới hạn đó cần giữ W trong
+BRAM (weight-stationary) hoặc phát vector từ BRAM. Thời gian của PS timer có cả thời gian khởi động/dừng DMA.
+
+Mô phỏng (`./tb/run_sim_axis.sh "4 0"`, 4084 vector của `vectors/`, liên tục và có ngắt quãng ngẫu nhiên): K = 4 và
+K = 0 đều `AXIS PASS errors=0`; liên tục: 36 765 chu kỳ = 9.0 chu kỳ/vector, `stall_in` = 0.
+Thiết kế dựng sẵn K = 4: WNS +0.094 ns ở 200 MHz, 7963 LUT, 17 BRAM, 0 DSP (`results/dma_util_k4.rpt`).
+Dựng lại: `vivado -mode batch -source bd/build_bd_dma.tcl -tclargs 4` rồi
+`vivado -mode batch -source flow/build_dma.tcl -tclargs 4` và `./flow/build_sw_dma.sh 4`.
+
 ## Bộ vector
 
 `vectors/gen_hil_vectors.py` sinh 4085 vector. Đầu vào giống nhau cho K = 0 và K = 4, giá trị mong đợi lấy từ mô hình
@@ -90,6 +137,11 @@ khoá ở các mũ biên đó chỉ được kiểm trong mô phỏng (`tb_key`)
 | `flow/build_hil.tcl`, `flow/build_sw_min.sh` | Hai bước con của `build_all.sh` |
 | `flow/board_run.tcl` | **Chạy trên board**: K = 4, K = 0 và đối chứng chéo |
 | `flow/arm_ila.tcl` | Bật ILA và lưu CSV |
+| `rtl/pe_axis.sv`, `rtl/pe_axis_bd_k*.v` | Bản AXI4-Stream của PE cho DMA, kèm bộ đếm chu kỳ/stall/starve (AXI4-Lite) |
+| `bd/build_bd_dma.tcl`, `flow/build_dma.tcl` | Block design DMA và bước dựng bitstream + XSA |
+| `sw/pe_dma_min.c`, `flow/build_sw_dma.sh` | App DMA bare-metal và bước build ELF |
+| `tb/tb_axis.sv`, `tb/run_sim_axis.sh` | Testbench stream (liên tục / có ngắt quãng) |
+| `flow/board_run_dma.tcl` | **Chạy DMA trên board**, in tốc độ |
 | `results/` | File dựng sẵn (`.bit/.xsa/.ltx`, `pe_hil_k*.elf/.bin`, `fsbl_zcu102.elf`), báo cáo util/timing, log mô phỏng và log board |
 | *Cũ, chỉ để tham khảo* | `flow/board_run_fsbl.tcl` (bản đầu của `board_run.tcl`), `flow/board_debug.tcl`, `flow/board_debug2.tcl` (chẩn đoán DDR), `flow/run_hil.sh`, `prep_hw.tcl`, `run_app.tcl`, `build_sw.tcl`, `check_result.py` (flow khi board cắm thẳng vào máy build; chưa sửa cho xsct 2025.2) |
 

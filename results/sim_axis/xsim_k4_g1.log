@@ -1,0 +1,20 @@
+
+****** xsim v2022.1 (64-bit)
+  **** SW Build 3526262 on Mon Apr 18 15:47:01 MDT 2022
+  **** IP Build 3524634 on Mon Apr 18 20:55:01 MDT 2022
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+
+source xsim.dir/s_k4_g1/xsim_script.tcl
+# xsim {s_k4_g1} -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+loaded 4084 vectors
+last at idx=4084 (nt=4084)
+CYCLES=68452
+VECS=4084
+STALL_IN=121
+STARVE=31577
+K=4 GAPS=1 AXIS PASS errors=0 vectors=4084
+$finish called at time : 342352500 ps : File "/home/phuoc/test_zcu102/tb/tb_axis.sv" Line 71
+exit
+INFO: [Common 17-206] Exiting xsim at Thu Nov  5 22:59:14 2026...

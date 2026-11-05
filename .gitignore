@@ -9,3 +9,7 @@ run*_k*.log
 build/
 model/__pycache__/
 results/sim_axi/*.pb
+results/sim_axis/*.hex
+results/sim_axis/xsim.dir/
+results/sim_axis/*.pb
+results/sim_axis/*.jou
