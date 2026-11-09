@@ -51,14 +51,17 @@ at 4.999 ns (all constraints met); `hil_zcu102_k0.bit`, `hil_zcu102_k0.xsa`.
 |---|---|---|---|---|---|
 | 28/10 `board_run_fsbl.tcl 4` (×2) | 2000 | PASS, 0 wrong, FNV `0xA85E4B0C` | — | — | `hil_run_zcu102_k4_PASS.log` |
 | 28/10 `board_run.tcl 4 0` | 2000 | PASS, 0 wrong, FNV `0xA85E4B0C` | PASS, 0 wrong, FNV `0x6A15E630` | — | `hil_run_k4_k0.log` |
-| next: `board_run.tcl` (4 0 cross) | 4085 | expect PASS, FNV `0x21517BF0` | expect PASS, FNV `0xDFE4E261` | expect 1124 wrong, first 23 | `hil_run_v4085.log` |
+| 09/11 `board_run.tcl` (4 0 cross) | 4085 | PASS, 0 wrong, FNV `0x21517BF0` | PASS, 0 wrong, FNV `0xDFE4E261` | CROSS_OK: 1124 wrong, first 23 | `hil_run_v4085_zcu102-1.log` |
+| 09/11 same run on **zcu102-2** | 4085 | FAIL, 62 wrong (first 11) | FAIL, 70 wrong (first 161) | — | `hil_run_v4085_zcu102-2_FAIL.log` |
+
+The zcu102-2 failure is in all three parts, same ELF and bitstream that pass on zcu102-1: suspected board issue, not reproduced or root-caused. Time per vector 10.94 µs (MMIO bound).
 
 Run time of the PS loop: 21.2 ms for 2000 vectors (10.6 µs/vector). With the MMU and caches off
 this is the AXI4-Lite MMIO rate of the A53, not the speed of the PE; it is not a throughput figure.
 
 ILA capture: not taken yet (`HIL_ILA=1`, then `flow/arm_ila.tcl`).
 
-## DMA streaming design (05/11/2026, chưa chạy trên board)
+## DMA streaming design (05/11/2026, chạy board 09/11/2026)
 
 | | |
 |---|---|
@@ -66,4 +69,4 @@ ILA capture: not taken yet (`HIL_ILA=1`, then `flow/arm_ila.tcl`).
 | Implementation K = 4 | WNS +0.094 ns, 7963 LUT, 17 BRAM, 0 DSP |
 | xsim, 4084 vector, K = 4 / K = 0 | `AXIS PASS errors=0`, liên tục và có ngắt quãng; 36 765 chu kỳ = 9.0 chu kỳ/vector, stall_in = 0 |
 | Giới hạn lý thuyết | 200 MHz / 9 beat = 22.2 M vector/s = 0.36 GMAC/s (giới hạn stream; PE: 1 vector/chu kỳ) |
-| Board | cần chạy: `flow/board_run_dma.tcl` |
+| Board (zcu102-1, `flow/board_run_dma.tcl`, `dma_run_k4.log`) | `DMA_PASS`: 204 400 vector, 0 sai; 1 848 703 chu kỳ PL = 9.045 chu kỳ/vector = 22.11 M vector/s = 0.354 GMAC/s; vào 3184 MB/s; stall_in = 2, starve = 9103 |

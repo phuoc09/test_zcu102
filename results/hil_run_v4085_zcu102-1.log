@@ -1,0 +1,124 @@
+
+****** Software Commandline Tool (XSCT) v2025.2.0
+  **** SW Build 6298600 on Thu Nov 13 00:55:04 MST 2025
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
+
+
+Warning: XSCT is deprecated and will be removed in future releases.
+We recommend using the new Python command-line tool for project management and debugging:
+- Run "vitis -i" for interactive mode.
+- Run "vitis -s <script>" for script mode.
+== targets
+  1  xcvu9p
+     2  Legacy Debug Hub
+        3  JTAG2AXI
+  4  xcvu9p
+     5  Legacy Debug Hub
+        6  JTAG2AXI
+        7  JTAG2AXI
+  8  PS TAP
+     9  PMU
+       10  MicroBlaze PMU (Sleeping. No clock)
+    11  PL
+ 12* PSU
+    13  RPU (Reset)
+       14  Cortex-R5 #0 (RPU Reset)
+       15  Cortex-R5 #1 (RPU Reset)
+    16  APU
+       17  Cortex-A53 #0 (Running)
+       18  Cortex-A53 #1 (Power On Reset)
+       19  Cortex-A53 #2 (Power On Reset)
+       20  Cortex-A53 #3 (Power On Reset)
+ 21  PS TAP
+    22  PMU
+    23  PL
+ 24  PS TAP
+    25  PMU
+    26  PL
+ 27  PSU
+    28  RPU
+       29  Cortex-R5 #0 (Running)
+       30  Cortex-R5 #1 (Reset)
+    31  APU
+       32  Cortex-A53 #0 (Reset Catch, EL3(S)/A64)
+       33  Cortex-A53 #1 (Power On Reset)
+       34  Cortex-A53 #2 (Power On Reset)
+       35  Cortex-A53 #3 (Power On Reset)
+ 36  PSU
+    37  RPU
+       38  Cortex-R5 #0 (Running)
+       39  Cortex-R5 #1 (Reset)
+    40  APU
+       41  Cortex-A53 #0 (Reset Catch, EL3(S)/A64)
+       42  Cortex-A53 #1 (Power On Reset)
+       43  Cortex-A53 #2 (Power On Reset)
+       44  Cortex-A53 #3 (Power On Reset)
+ 45  PS TAP
+    46  PMU
+    47  PL
+ 48  PSU
+    49  RPU
+       50  Cortex-R5 #0 (Running)
+       51  Cortex-R5 #1 (Reset)
+    52  APU
+       53  Cortex-A53 #0 (Reset Catch, EL3(S)/A64)
+       54  Cortex-A53 #1 (Power On Reset)
+       55  Cortex-A53 #2 (Power On Reset)
+       56  Cortex-A53 #3 (Power On Reset)
+ 57  PS TAP
+    58  PMU
+    59  PL
+ 60  PSU
+    61  RPU (Reset)
+       62  Cortex-R5 #0 (RPU Reset)
+       63  Cortex-R5 #1 (RPU Reset)
+    64  APU
+       65  Cortex-A53 #0 (Running)
+       66  Cortex-A53 #1 (Reset)
+       67  Cortex-A53 #2 (Reset)
+       68  Cortex-A53 #3 (Reset)
+STEP1 k=4 bitstream: FPGA is configured
+warning: unknown breakpoint id all
+STEP2 k=4 FSBL done, pc=00000000fffc0c08
+STEP3 k=4 (fsbl) DDR block test: 0 / 1024 mismatches
+STEP4 k=4 AFI_FS 0x00000A00 -> 0x00000800  (bits 9:8 must be 0)
+STEP4 k=4 PL: N=0x00000010 K=0x00000004 WAIT=0x0000000C
+STEP5 k=4 app running (ILA wait 0 ms)
+STEP5 k=4 pc after run: 0000000000101f4c  (1 s)
+RESULT k=4 (fsbl): 0x48494C31 0x00000FF5 0x00000000 0xFFFFFFFF 0x00000000 0x00000000 0x21517BF0 0x21517BF0 0x00000FF5 0x00000001 0x00000010 0x00000004 0x5A5AC33C 0x0000AE90 0xA5A5A5A5 0x21517BF0
+STAGE  k=4: stage=0x53540006 vector=0x00000FF4
+PARTS  k=4: mismatches per part (random discrim edge) = 0 0 0
+EXCEPTION k=4: magic 0x00000000 (0xE7C0DEAD = recorded) ESR=0x00000000 ELR=0x00000000 FAR=0x00000000
+HIL_PASS k=4 init=fsbl vectors=4085 run_us=44688 (10.94 us/vector, caches off, AXI4-Lite MMIO bound)
+STEP1 k=0 bitstream: FPGA is configured
+warning: unknown breakpoint id all
+STEP2 k=0 FSBL done, pc=00000000fffc0c08
+STEP3 k=0 (fsbl) DDR block test: 0 / 1024 mismatches
+STEP4 k=0 AFI_FS 0x00000A00 -> 0x00000800  (bits 9:8 must be 0)
+STEP4 k=0 PL: N=0x00000010 K=0x00000000 WAIT=0x0000000C
+STEP5 k=0 app running (ILA wait 0 ms)
+STEP5 k=0 pc after run: 0000000000101f48  (1 s)
+RESULT k=0 (fsbl): 0x48494C31 0x00000FF5 0x00000000 0xFFFFFFFF 0x00000000 0x00000000 0xDFE4E261 0xDFE4E261 0x00000FF5 0x00000001 0x00000010 0x00000000 0x5A5AC33C 0x0000AE92 0xA5A5A5A5 0xDFE4E261
+STAGE  k=0: stage=0x53540006 vector=0x00000FF4
+PARTS  k=0: mismatches per part (random discrim edge) = 0 0 0
+EXCEPTION k=0: magic 0x00000000 (0xE7C0DEAD = recorded) ESR=0x00000000 ELR=0x00000000 FAR=0x00000000
+HIL_PASS k=0 init=fsbl vectors=4085 run_us=44690 (10.94 us/vector, caches off, AXI4-Lite MMIO bound)
+STEP1 k=0 bitstream: FPGA is configured
+warning: unknown breakpoint id all
+STEP2 k=0 FSBL done, pc=00000000fffc0c08
+STEP3 k=0 (fsbl) DDR block test: 0 / 1024 mismatches
+STEP4 k=0 AFI_FS 0x00000A00 -> 0x00000800  (bits 9:8 must be 0)
+STEP4 k=0 PL: N=0x00000010 K=0x00000000 WAIT=0x0000000C
+STEP5 k=4 app running (ILA wait 0 ms)
+STEP5 k=4 pc after run: 0000000000101f4c  (1 s)
+RESULT k=4 (fsbl): 0x48494C31 0x00000FF5 0x00000464 0x00000017 0xC3E0CA37 0xC3E0D3F6 0xDFE4E261 0x21517BF0 0x00000FF5 0x00000001 0x00000010 0x00000000 0x5A5AC33C 0x0000AE45 0xDEADDEAD 0x21517BF0
+STAGE  k=4: stage=0x53540006 vector=0x00000FF4
+PARTS  k=4: mismatches per part (random discrim edge) = 26 1000 98
+EXCEPTION k=4: magic 0x00000000 (0xE7C0DEAD = recorded) ESR=0x00000000 ELR=0x00000000 FAR=0x00000000
+CROSS_OK K=4 app on K=0 bitstream (init=fsbl): mismatches=1124 first=23, expected 1124 first=23
+== SUMMARY
+HIL_PASS k=4 init=fsbl vectors=4085 run_us=44688 (10.94 us/vector, caches off, AXI4-Lite MMIO bound)
+HIL_PASS k=0 init=fsbl vectors=4085 run_us=44690 (10.94 us/vector, caches off, AXI4-Lite MMIO bound)
+CROSS_OK K=4 app on K=0 bitstream (init=fsbl): mismatches=1124 first=23, expected 1124 first=23
+BOARD_RUN_DONE

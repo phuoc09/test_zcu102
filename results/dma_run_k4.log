@@ -1,0 +1,100 @@
+
+****** Software Commandline Tool (XSCT) v2025.2.0
+  **** SW Build 6298600 on Thu Nov 13 00:55:04 MST 2025
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
+
+
+Warning: XSCT is deprecated and will be removed in future releases.
+We recommend using the new Python command-line tool for project management and debugging:
+- Run "vitis -i" for interactive mode.
+- Run "vitis -s <script>" for script mode.
+== targets
+  1  xcvu9p
+     2  Legacy Debug Hub
+        3  JTAG2AXI
+  4  xcvu9p
+     5  Legacy Debug Hub
+        6  JTAG2AXI
+        7  JTAG2AXI
+  8  PS TAP
+     9  PMU
+    10  PL
+ 11  PS TAP
+    12  PMU
+    13  PL
+ 14  PSU
+    15  RPU
+       16  Cortex-R5 #0 (Running)
+       17  Cortex-R5 #1 (Reset)
+    18  APU
+       19  Cortex-A53 #0 (Reset Catch, EL3(S)/A64)
+       20  Cortex-A53 #1 (Power On Reset)
+       21  Cortex-A53 #2 (Power On Reset)
+       22  Cortex-A53 #3 (Power On Reset)
+ 23  PSU
+    24  RPU
+       25  Cortex-R5 #0 (Running)
+       26  Cortex-R5 #1 (Reset)
+    27  APU
+       28  Cortex-A53 #0 (Reset Catch, EL3(S)/A64)
+       29  Cortex-A53 #1 (Power On Reset)
+       30  Cortex-A53 #2 (Power On Reset)
+       31  Cortex-A53 #3 (Power On Reset)
+ 32  PS TAP
+    33  PMU
+    34  PL
+ 35  PSU
+    36  RPU
+       37  Cortex-R5 #0 (Running)
+       38  Cortex-R5 #1 (Reset)
+    39  APU
+       40  Cortex-A53 #0 (Reset Catch, EL3(S)/A64)
+       41  Cortex-A53 #1 (Power On Reset)
+       42  Cortex-A53 #2 (Power On Reset)
+       43  Cortex-A53 #3 (Power On Reset)
+ 44  PS TAP
+    45  PMU
+    46  PL
+ 47  PSU
+    48  RPU (Reset)
+       49  Cortex-R5 #0 (RPU Reset)
+       50  Cortex-R5 #1 (RPU Reset)
+    51  APU
+       52  Cortex-A53 #0 (Running)
+       53  Cortex-A53 #1 (Reset)
+       54  Cortex-A53 #2 (Reset)
+       55  Cortex-A53 #3 (Reset)
+ 56  PS TAP
+    57  PMU
+    58  PL
+       59  Legacy Debug Hub
+ 60* PSU
+    61  RPU (Reset)
+       62  Cortex-R5 #0 (RPU Reset)
+       63  Cortex-R5 #1 (RPU Reset)
+    64  APU
+       65  Cortex-A53 #0 (External Debug Request, EL3(S)/A64)
+       66  Cortex-A53 #1 (Power On Reset)
+       67  Cortex-A53 #2 (Power On Reset)
+       68  Cortex-A53 #3 (Power On Reset)
+STEP1 k=4 DMA bitstream: FPGA is configured
+warning: unknown breakpoint id all
+STEP2 FSBL done, pc=00000000fffc0c08
+STEP3 DDR block test at 0x00200000/0x20000000/0x30000000: 0 / 3072 mismatches
+STEP4 AFI_FS (HPM0 32 bit)      0x00000A00 -> 0x00000800
+STEP4 HP0 RDCTRL (128 bit)      0x000003B0 -> 0x000003B0
+STEP4 HP0 WRCTRL (128 bit)      0x000003B0 -> 0x000003B0
+STEP4 RST_FPD_TOP AFI resets    0x00000000 -> 0x00000000
+STEP4 PL: DMA MM2S_SR=0x00000001 S2MM_SR=0x00000001 PE K=0x00000004
+WARNING: If the reset is being triggered after powering on the device,
+          write bootloop at reset vector address (0xffff0000), or use
+          -clear-registers option, to avoid unpredictable behavior.
+          Further warnings will be suppressed
+STEP5 app running
+STEP5 pc after run: 0000000000102080  (2 s, stage 0x53540006)
+RESULT: 0x444D4131 0x00031E70 0x00000000 0xFFFFFFFF 0x00000000 0x00000000 0x00000000 0x00000000 0x001C357F 0x00031E70 0x00000002 0x0000238F 0x000E1B19 0x00000000 0xA5A5A5A5 0x00000004
+EXCEPTION: magic 0x00000000 (0xE7C0DEAD = recorded) ESR=0x00000000 ELR=0x00000000 FAR=0x00000000
+== SUMMARY
+DMA_PASS k=4 vectors=204400 mismatches=0 pl_cycles=1848703 (9.045 cycles/vector) -> 22.11 M vectors/s = 0.354 GMAC/s at 200 MHz, in 3184 MB/s; stall_in=2 starve=9103
+BOARD_RUN_DMA_DONE

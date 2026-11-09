@@ -11,13 +11,15 @@ K = 4 là PE dùng khoá LUT-ranking (bản chính); K = 0 là khoá ALM gốc c
 |---|---|---|---|---|
 | 28/10 `board_run_fsbl.tcl 4` (2 lần) | 2000 | PASS, 0 sai | — | — |
 | 28/10 `board_run.tcl 4 0` | 2000 | PASS, 0 sai, FNV `0xA85E4B0C` | PASS, 0 sai, FNV `0x6A15E630` | — |
-| **cần chạy:** `board_run.tcl` | 4085 | | | |
-| **cần chạy:** `board_run_dma.tcl` (DMA, đo tốc độ) | 4088 × 50 | | — | — |
+| 09/11 `board_run.tcl` (zcu102-1) | 4085 | PASS, 0 sai, FNV `0x21517BF0` | PASS, 0 sai, FNV `0xDFE4E261` | CROSS_OK: 1124 sai, đầu tiên là 23 |
+| 09/11 `board_run_dma.tcl` (zcu102-1) | 4088 × 50 | PASS, 0 sai trên 204 400 vector, 9.045 chu kỳ/vector = 22.11 M vector/s | — | — |
+
+Lần chạy 4085 vector trên **zcu102-2** (log `results/hil_run_v4085_zcu102-2_FAIL.log`) báo 62 (K=4) và 70 (K=0) vector sai. Cùng ELF và bitstream chạy sạch trên zcu102-1, nên nghi lỗi do board zcu102-2; chưa tái hiện hay tìm nguyên nhân.
 
 Chi tiết và số liệu implementation: `results/HIL_RESULTS.md`. Flow này chỉ kiểm **chức năng** (bit-exact).
 Nó không đo năng lượng: số năng lượng của PE lấy từ SAIF.
 
-## Lần đo tiếp theo (cần chạy)
+## Chạy HIL 4085 vector (đã PASS trên zcu102-1 ngày 09/11)
 
 ```bash
 git pull
@@ -60,7 +62,7 @@ Chạy riêng một mục: `... flow/board_run.tcl 4`. Chụp ILA (tuỳ chọn)
 rồi ngay khi log in `STEP5 k=4 app running` chạy
 `HIL_URL=TCP:172.16.36.2:3121 vivado -mode batch -source flow/arm_ila.tcl -tclargs 4`.
 
-## Chạy DMA: đo tốc độ stream (cần chạy)
+## Chạy DMA: đo tốc độ stream (đã PASS trên zcu102-1 ngày 09/11)
 
 Thiết kế thứ hai, `results/dma_zcu102_k4.bit`: **DDR → AXI DMA (MM2S) → `pe_axis` → AXI DMA (S2MM) → DDR**, toàn bộ PL
 chạy 200 MHz từ SI570 300 MHz (giống bản HIL, không phụ thuộc clock của FSBL). DMA dùng cổng S_AXI_HP0_FPD 128 bit,
